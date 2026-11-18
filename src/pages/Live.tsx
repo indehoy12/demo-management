@@ -1,0 +1,15 @@
+import {Badge} from '../ui';import {useEffect,useState} from 'react';import {useStore} from '../store';import {ago,dur} from '../util';
+export default function Live(){
+ const {s,ev,d}=useStore();const [now,setNow]=useState(Date.now());
+ useEffect(()=>{const i=setInterval(()=>setNow(Date.now()),1000);return()=>clearInterval(i)},[]);
+ const L=ev.rd.find(r=>r.st==='live'),N=ev.rd.find(r=>r.st==='planned'||r.st==='delayed');
+ let cd='--:--',ov=false,w=0;if(L&&L.t0){const t=dur(L)*60,el=(now-L.t0)/1000,r=t-el,a=Math.abs(r);cd=(r<0?'+':'')+Math.floor(a/60)+':'+String(Math.floor(a%60)).padStart(2,'0');ov=r<0;w=Math.min(100,el/t*100)}
+ const op=(o:'start'|'complete'|'delay'|'skip'|'reset')=>d({type:'live',op:o});
+ const cl:Record<string,string>={live:'border-red-500 bg-red-50',done:'opacity-50',skipped:'opacity-50',delayed:'border-amber-500'};
+ return <div className="space-y-4 pg"><div><h2 className="font-serif text-2xl">Live Monitoring</h2><p className="text-slate-500">{ev.name} · simulasi lokal</p></div>
+  <div className="grid md:grid-cols-2 gap-3"><div className="card">{L?<><span className="bg-red-600 text-white text-xs font-bold rounded-full px-2">LIVE</span><h3 className="font-serif text-2xl my-1">{L.title}</h3><p className="text-slate-500">{L.s}–{L.e} · {L.pic} · {L.loc}</p><div className={`font-serif text-5xl font-bold ${ov?'text-red-600':'text-nv'}`} aria-live="off">{cd}</div><div className="h-2 bg-slate-200 rounded-full overflow-hidden"><i className="block h-full bg-or bar-anim" style={{width:w+'%'}}/></div></>:<><span className="text-slate-500">Current session</span><h3 className="font-serif text-2xl">Tidak ada sesi aktif</h3><p className="text-slate-500">Tekan Start Session untuk memulai.</p></>}</div>
+   <div className="card"><span className="text-slate-500">Next session</span><h3 className="font-serif text-xl">{N?N.title:'Tidak ada sesi berikutnya'}</h3>{N&&<p className="text-slate-500">{N.s}–{N.e} · {N.pic} · {N.loc} ({N.st})</p>}</div></div>
+  <div className="card flex flex-wrap gap-2"><button className="btn btn-p" onClick={()=>op('start')}>Start Session</button><button className="btn" onClick={()=>op('complete')}>Complete Session</button><button className="btn" onClick={()=>op('delay')}>Mark Delayed</button><button className="btn" onClick={()=>op('skip')}>Skip Session</button><button className="btn text-red-600" onClick={()=>op('reset')}>Reset Live Simulation</button></div>
+  <div className="grid md:grid-cols-2 gap-3"><div className="card"><h3 className="font-serif mb-2">Rundown timeline</h3><div className="flex flex-wrap gap-2">{ev.rd.map(r=><div key={r.id} className={`flex-1 min-w-[120px] border rounded-lg p-2 text-sm ${cl[r.st]||'border-slate-200'}`}><b>{r.s}</b> {r.title}<br/><Badge s={r.st}/></div>)}{!ev.rd.length&&<p className="text-slate-500">Belum ada sesi di rundown.</p>}</div></div>
+   <div className="card"><h3 className="font-serif mb-2">Activity log</h3><ul>{s.act.slice(0,8).map((a,i)=><li key={i} className="py-1.5 border-b border-slate-100">{a.m}<small className="block text-slate-500">{ago(a.t)}</small></li>)}</ul></div></div></div>;
+}

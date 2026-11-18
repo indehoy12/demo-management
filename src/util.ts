@@ -1,0 +1,17 @@
+import {Ev,Milestone} from './types';
+const pad=(n:number)=>String(n).padStart(2,'0');
+export const ymd=(d:Date)=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+export const addD=(s:string,n:number)=>{const d=new Date(s+'T00:00:00');d.setDate(d.getDate()+n);return ymd(d)};
+export const today=()=>{const d=new Date();d.setHours(0,0,0,0);return ymd(d)};
+export const dt=(n:number)=>addD(today(),n);
+let u=0;export const uid=()=>'i'+(++u)+Math.random().toString(36).slice(2,6);
+export const pct=(e:Ev)=>e.ms.length?Math.round(e.ms.filter(m=>m.st==='done').length*100/e.ms.length):0;
+export const rdy=(e:Ev)=>e.ck.length?Math.round(e.ck.filter(c=>c.d).length*100/e.ck.length):0;
+export const overdue=(m:Milestone)=>m.st!=='done'&&m.date<today();
+export const fd=(d:string)=>new Date(d+'T00:00:00').toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'});
+export const ago=(t:number)=>{const m=Math.round((Date.now()-t)/60000);return m<1?'baru saja':m<60?`${m} mnt lalu`:m<1440?`${Math.round(m/60)} jam lalu`:`${Math.round(m/1440)} hari lalu`};
+import {Ev as E2} from './types';
+export const tm=(s:string)=>{const [h,m]=s.split(':');return +h*60+ +m};
+export const dur=(s:{s:string;e:string})=>tm(s.e)-tm(s.s);
+export const conflicts=(e:E2)=>{const r=new Set<string>();e.rd.forEach((a,i)=>e.rd.forEach((b,j)=>{if(i<j&&tm(a.s)<tm(b.e)&&tm(b.s)<tm(a.e)){r.add(a.id);r.add(b.id)}}));return r};
+export const toastMsg=(m:string)=>dispatchEvent(new CustomEvent('toast',{detail:m}));

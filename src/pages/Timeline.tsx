@@ -1,0 +1,12 @@
+import {useState} from 'react';import {useStore} from '../store';import {addD,fd,ymd,today} from '../util';
+export default function Timeline(){
+ const {ev}=useStore();const [tv,setTv]=useState<'cal'|'list'>('cal');const [cm,setCm]=useState(0);
+ const it=[{d:addD(ev.date,-45),n:'Kick-off persiapan',k:'p'},{d:addD(ev.date,-7),n:'Gladi resik dan final check',k:'p'},{d:ev.date,n:'Hari acara: '+ev.name,k:'e'},...ev.ms.map(m=>({d:m.date,n:m.title,k:'m'}))].sort((a,b)=>a.d<b.d?-1:1);
+ const col:Record<string,string>={p:'bg-slate-600 text-white',e:'bg-or text-nv',m:'bg-blue-700 text-white'};
+ const b=new Date(ev.date+'T00:00:00');b.setDate(1);b.setMonth(b.getMonth()+cm);const y=b.getFullYear(),mo=b.getMonth(),fs=(b.getDay()+6)%7,dim=new Date(y,mo+1,0).getDate();
+ return <div className="space-y-4 pg"><div className="flex flex-wrap justify-between gap-2"><div><h2 className="font-serif text-2xl">Timeline</h2><p className="text-slate-500">{ev.name}</p></div><div className="flex gap-2"><button className={`btn ${tv==='cal'?'btn-p':''}`} onClick={()=>setTv('cal')}>Calendar</button><button className={`btn ${tv==='list'?'btn-p':''}`} onClick={()=>setTv('list')}>Timeline</button></div></div>
+  <div className="card">{tv==='cal'?<><div className="flex flex-wrap items-center gap-2 mb-2"><button className="btn" onClick={()=>setCm(cm-1)}>Sebelumnya</button><b>{b.toLocaleDateString('id-ID',{month:'long',year:'numeric'})}</b><button className="btn" onClick={()=>setCm(cm+1)}>Berikutnya</button></div>
+   <div className="overflow-x-auto"><div className="grid grid-cols-7 gap-1 min-w-[560px]">{['Sen','Sel','Rab','Kam','Jum','Sab','Min'].map(d=><b key={d} className="text-center text-xs text-slate-500">{d}</b>)}{Array.from({length:fs},(_,i)=><span key={'e'+i}/>)}
+   {Array.from({length:dim},(_,i)=>{const k=ymd(new Date(y,mo,i+1));return <div key={k} className={`min-h-[72px] border rounded-lg p-1 text-[11px] overflow-hidden ${k===today()?'border-2 border-nv':'border-slate-200'}`}><em className="not-italic text-slate-500">{i+1}</em>{it.filter(x=>x.d===k).map((x,j)=><i key={j} title={x.n} className={`block not-italic truncate rounded px-1 mt-0.5 ${col[x.k]}`}>{x.n}</i>)}</div>})}</div></div></>
+   :<ul className="border-l-4 border-slate-200 pl-4 space-y-3">{it.map((x,i)=><li key={i}><span className={`inline-block w-2.5 h-2.5 rounded-full mr-2 ${col[x.k]}`}/><b>{x.n}</b><small className="text-slate-500"> · {fd(x.d)}</small></li>)}</ul>}</div></div>;
+}
